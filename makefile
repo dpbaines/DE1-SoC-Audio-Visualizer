@@ -28,17 +28,17 @@ OCFLAGS		:= -O srec
 
 # Files
 HDRS		:=
-SRCS		:= test.c
+SRCS		:= main.c
 OBJS		:= $(patsubst %, %.o, $(SRCS))
 
 # Targets
-COMPILE: test.srec
+COMPILE: main.srec
 
-test.srec: test.axf
+main.srec: main.axf
 	$(RM) $@
 	$(OC) $(OCFLAGS) $< $@
 
-test.axf: $(OBJS)
+main.axf: $(OBJS)
 	$(RM) $@
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
 
@@ -51,5 +51,5 @@ test.axf: $(OBJS)
 	$(AS) $(ASFLAGS) $< -o $@
 
 CLEAN: 
-	$(RM) test.srec test.axf $(OBJS)
+	$(RM) main.srec main.axf $(OBJS)
 

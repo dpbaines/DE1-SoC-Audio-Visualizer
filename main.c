@@ -32,6 +32,8 @@ int main(void) {
     Im right_buffer_im[BUF_SIZE];
 
     while (1) {
+
+        //This segment loads the audio buffers
         *(red_LED_ptr) = 0x1; // turn on LEDR[0]
         fifospace = *(audio_ptr + 1); // read the audio port fifospace register
         int buffer_index = 0;
@@ -56,8 +58,11 @@ int main(void) {
         fft(left_buffer_re, left_buffer_im, BUF_SIZE);
     }
 }
+
 /****************************************************************************************
 * Subroutine to read KEYs
+* Carry over from example code I never deleted
+* Might come in useful later otherwise delete
 ****************************************************************************************/
 void check_KEYs(int * KEY0, int * KEY1, int * counter) {
     volatile int * KEY_ptr = (int *)KEY_BASE;
@@ -84,26 +89,84 @@ void check_KEYs(int * KEY0, int * KEY1, int * counter) {
     }
 }
 
-Re cexp_re(Re re_in) {
-    return (cos(re_in));
+//Goddammit I need to redefine pow too
+float pow_me(float in, float power) {
+    float out = in;
+
+    if(power == 0) return 1;
+
+    for(int i = 0; i < (power - 1); i++) {
+        out = out * in;
+    }
+
+    return out;
 }
 
-Im cexp_im(Im im_in) {
-    return (sin(im_in));
+// Just a 5th order taylor series approximation, if it's too slow there are faster algorithms out there
+// It's accurate enough for visual use
+// I hope to figure out the STD library
+// Improvement: Use BKM or CORDIC algorithms
+float sin_me(float in) {
+    //First reduce the input to be between 0 and pi/2
+    float quotient = in;
+    float quadrant = 0;
+
+    while((quotient - PI/2) > 0) {
+        quotient -= PI/2;
+        quadrant += 1;
+
+        if(quadrant == 4) quadrant = 0;
+    }
+
+    if(quadrant == 0) {
+        float taylor_value = quotient - (pow_me(quotient, 3) / 6) + (pow_me(quotient, 5) / 120);
+        return taylor_value;
+    } else if(quadrant == 1) {
+        float taylor_value = (PI/2 - quotient) - (pow_me(PI/2 - quotient, 3) / 6) + (pow_me(PI/2 - quotient, 5) / 120);
+        return taylor_value;
+    }
+    else if(quadrant == 2) {
+        float taylor_value = (quotient) - (pow_me(quotient, 3) / 6) + (pow_me(quotient, 5) / 120);
+        return -taylor_value;
+    }
+    else {
+        float taylor_value = (PI/2 - quotient) - (pow_me(PI/2 - quotient, 3) / 6) + (pow_me(PI/2 - quotient, 5) / 120);
+        return -taylor_value;
+    }
+    
+    return -1;
 }
+
+float cos_me(float in) {
+    return sin_me(in + PI/2);
+}
+
+inline Re cexp_re(Re re_in) {
+    return cos_me(re_in);
+}
+
+inline Im cexp_im(Im im_in) {
+    return sin_me(im_in);
+}
+
+/*
+ * Original code copied from https://rosettacode.org/wiki/Fast_Fourier_transform#C
+ * Modified to work without complex library which isn't supported
+ */
 
 void _fft(Re buf_re[], Im buf_im[], Re out_re[], Im out_im[], int n, int step) {
 	if (step < n) {
-		_fft(out, buf, n, step * 2);
-		_fft(out + step, buf + step, n, step * 2);
+		_fft(out_re, out_im, buf_re, buf_im, n, step * 2);
+		_fft(out_re + step, out_im + step, buf_re + step, buf_im + step, n, step * 2);
  
 		for (int i = 0; i < n; i += 2 * step) {
-			Re re_t = cexp_re(PI * i / n) * out[i + step];
-            Im im_t = cexp_im(PI * i / n) * out[i + step];
-			buf_re[i / 2]     = out[i] + re_t;
-            buf_im[i / 2]     = out[i] + im_t;
-			buf_re[(i + n)/2] = out[i] - re_t;
-            buf_im[(i + n)/2] = out[i] - im_t;
+            //This conversion should work
+			Re re_t = cexp_re(-PI * i / n) * out_re[i + step] - cexp_im(-PI * i / n) * out_im[i + step];
+            Im im_t = cexp_im(-PI * i / n) * out_re[i + step] + cexp_re(-PI * i / n) * out_im[i + step];
+			buf_re[i / 2]     = out_re[i] + re_t;
+            buf_im[i / 2]     = out_im[i] + im_t;
+			buf_re[(i + n)/2] = out_re[i] - re_t;
+            buf_im[(i + n)/2] = out_im[i] - im_t;
 		}
 	}
 }
