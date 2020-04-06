@@ -56,6 +56,12 @@ int main(void) {
 
         // Use Left channel
         fft(left_buffer_re, left_buffer_im, BUF_SIZE);
+        
+        //Test code
+        for(int i = 0; i < BUF_SIZE; i++) {
+            printf("%f ", left_buffer_re[i]);
+        }
+        printf("\n");
     }
 }
 
@@ -90,7 +96,7 @@ void check_KEYs(int * KEY0, int * KEY1, int * counter) {
 }
 
 //Goddammit I need to redefine pow too
-float pow_me(float in, float power) {
+float pow_me(float in, int power) {
     float out = in;
 
     if(power == 0) return 1;
