@@ -189,4 +189,3 @@ void fft(Re buf_re[], Im buf_im[], int n) {
     }
  
 	_fft(buf_re, buf_im, out_re, out_im, n, 1);
-}
