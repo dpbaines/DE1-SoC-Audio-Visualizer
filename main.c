@@ -94,43 +94,43 @@ int main(void) {
             //frequency bin 1
             if(i<62){
                 x_plot = 0;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 2
             else if(62<=i<124){
                 x_plot = 10;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 3
             else if(124<=i<186){
                 x_plot = 20;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 4
             else if(186<=i<248){
                 x_plot = 30;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 5
             else if(248<=i<310){
                 x_plot = 40;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 6
             if(310<=i<372){
                 x_plot = 50;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 7
             if(372<=i<434){
                 x_plot = 60;
-                y_plot += y_scale(amplitude[i]);
+                y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             
