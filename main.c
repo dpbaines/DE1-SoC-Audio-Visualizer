@@ -9,13 +9,14 @@
 #define BUF_THRESHOLD 32 // 25% of 128 word buffer
 
 // Since complex.h doesn't exist have to write my own complex handling system
-typedef float Re;
-typedef float Im;
+typedef double Re;
+typedef double Im;
 
 #define PI 3.141592654
 
 void check_KEYs(int *, int *, int *);
 void fft(Re buf_re[], Im buf_im[], int n);
+double sqrt(double number);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -59,7 +60,8 @@ int main(void) {
         
         //Test code
         for(int i = 0; i < BUF_SIZE; i++) {
-            printf("%f ", left_buffer_re[i]);
+	    double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+	    printf("%lf ", value);
         }
         printf("\n");
     }
@@ -96,8 +98,8 @@ void check_KEYs(int * KEY0, int * KEY1, int * counter) {
 }
 
 //Goddammit I need to redefine pow too
-float pow_me(float in, int power) {
-    float out = in;
+double pow_me(double in, int power) {
+    double out = in;
 
     if(power == 0) return 1;
 
@@ -112,10 +114,10 @@ float pow_me(float in, int power) {
 // It's accurate enough for visual use
 // I hope to figure out the STD library
 // Improvement: Use BKM or CORDIC algorithms
-float sin_me(float in) {
+double sin_me(double in) {
     //First reduce the input to be between 0 and pi/2
-    float quotient = in;
-    float quadrant = 0;
+    double quotient = in;
+    double quadrant = 0;
 
     while((quotient - PI/2) > 0) {
         quotient -= PI/2;
@@ -125,25 +127,42 @@ float sin_me(float in) {
     }
 
     if(quadrant == 0) {
-        float taylor_value = quotient - (pow_me(quotient, 3) / 6) + (pow_me(quotient, 5) / 120);
+        double taylor_value = quotient - (pow_me(quotient, 3) / 6) + (pow_me(quotient, 5) / 120);
         return taylor_value;
     } else if(quadrant == 1) {
-        float taylor_value = (PI/2 - quotient) - (pow_me(PI/2 - quotient, 3) / 6) + (pow_me(PI/2 - quotient, 5) / 120);
+        double taylor_value = (PI/2 - quotient) - (pow_me(PI/2 - quotient, 3) / 6) + (pow_me(PI/2 - quotient, 5) / 120);
         return taylor_value;
     }
     else if(quadrant == 2) {
-        float taylor_value = (quotient) - (pow_me(quotient, 3) / 6) + (pow_me(quotient, 5) / 120);
+        double taylor_value = (quotient) - (pow_me(quotient, 3) / 6) + (pow_me(quotient, 5) / 120);
         return -taylor_value;
     }
     else {
-        float taylor_value = (PI/2 - quotient) - (pow_me(PI/2 - quotient, 3) / 6) + (pow_me(PI/2 - quotient, 5) / 120);
+        double taylor_value = (PI/2 - quotient) - (pow_me(PI/2 - quotient, 3) / 6) + (pow_me(PI/2 - quotient, 5) / 120);
         return -taylor_value;
     }
     
     return -1;
 }
 
-float cos_me(float in) {
+/*
+ * Copied from https://stackoverflow.com/questions/11644441/fast-inverse-square-root-on-x64/11644533
+ * A inv square root function, derived from an video game implementation
+ * Does some weird witchcraft
+ */
+double sqrt(double number) {
+    double y = number;
+    double x2 = y * 0.5;
+    long long i = *(long long *) &y;
+    // The magic number is for doubles is from https://cs.uwaterloo.ca/~m32rober/rsqrt.pdf
+    i = 0x5fe6eb50c7b537a9 - (i >> 1);
+    y = *(double *) &i;
+    y = y * (1.5 - (x2 * y * y));   // 1st iteration
+    //      y  = y * ( 1.5 - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+    return 1/y;
+}
+
+double cos_me(double in) {
     return sin_me(in + PI/2);
 }
 
@@ -189,3 +208,4 @@ void fft(Re buf_re[], Im buf_im[], int n) {
     }
  
 	_fft(buf_re, buf_im, out_re, out_im, n, 1);
+ }
