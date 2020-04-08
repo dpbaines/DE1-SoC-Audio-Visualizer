@@ -12,21 +12,10 @@
 typedef float Re;
 typedef float Im;
 
-//global variable for pixel buffer
-volatile int pixel_buffer_start; 
-
 #define PI 3.141592654
 
 void check_KEYs(int *, int *, int *);
 void fft(Re buf_re[], Im buf_im[], int n);
-
-//function prototypes for VGA display
-void draw_line(int x0, int y0, int x1, int y1, short int line_color);
-void clear_screen();
-void plot_pixel(int x, int y, short int line_color);
-void wait_for_vsync();
-int x_scale(int x);
-int y_scale(float y);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -41,28 +30,6 @@ int main(void) {
     
     Re right_buffer_re[BUF_SIZE];
     Im right_buffer_im[BUF_SIZE];
-
-    /* used for vga display */
-
-    //line colour for graph
-    short int line_color = 0xF81F;
-    volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
-
-    //set front pixel buffer to start of FPGA On-chip memory
-    *(pixel_ctrl_ptr + 1) = 0xC8000000; 
-    //swapping the front/back buffers, to set the front buffer location
-    wait_for_vsync();
-    //initializing a pointer to the pixel buffer, used by the  drawing functions
-    pixel_buffer_start = *pixel_ctrl_ptr;
-
-    clear_screen(); 
-
-    // pixel_buffer_start points to the pixel buffer
-    //set back pixel buffer to start of SDRAM memory 
-    *(pixel_ctrl_ptr + 1) = 0xC0000000;
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
-
-    int y_plot, x_plot;
 
     while (1) {
 
@@ -89,60 +56,6 @@ int main(void) {
 
         // Use Left channel
         fft(left_buffer_re, left_buffer_im, BUF_SIZE);
-
-        /*******************ANIMATION PART********************/
-        clear_screen();
-    
-        //sorting frequencies into 32 bins to plot
-		for(int i = 0; i < buffer_size; i++){
-            //frequency bin 1
-            if(i<62){
-                x_plot = 0;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            //frequency bin 2
-            else if(62<=i<124){
-                x_plot = 10;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            //frequency bin 3
-            else if(124<=i<186){
-                x_plot = 20;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            //frequency bin 4
-            else if(186<=i<248){
-                x_plot = 30;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            //frequency bin 5
-            else if(248<=i<310){
-                x_plot = 40;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            //frequency bin 6
-            if(310<=i<372){
-                x_plot = 50;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            //frequency bin 7
-            if(372<=i<434){
-                x_plot = 60;
-                y_plot += y_scale(amplitude[i]);
-                draw_line(x_plot, y_plot, x_plot, 220, line_color);
-            } 
-            
-		}
-		
-        wait_for_vsync(); // swap front and back buffers on VGA vertical sync
-        pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
-		
         
         //Test code
         for(int i = 0; i < BUF_SIZE; i++) {
@@ -276,94 +189,4 @@ void fft(Re buf_re[], Im buf_im[], int n) {
     }
  
 	_fft(buf_re, buf_im, out_re, out_im, n, 1);
-}
-
-/*****************Helper Functions for Drawing*******************/
-void draw_line(int x0, int y0, int x1, int y1, short int colour) {
-	for(int i = 0; i < 5; i++)
-        bool is_steep = abs(y1-y0) > abs(x1-x0);
-
-        if(is_steep) {
-            int temp = x0;
-            x0 = y0;
-            y0 = temp;
-		
-            temp = x1;
-            x1 = y1;
-            y1 = temp;
-        } 
-	
-        if(x0 > x1) {
-            int temp = x0;
-            x0 = x1;
-            x1 = temp;
-		
-            temp = y0;
-            y0 = y1;
-            y1 = temp;
-        }
-	
-        int delta_x = x1 - x0;
-        int delta_y = abs(y1 - y0);
-        int error = -(delta_x / 2);
-        int y = y0;
-
-        int y_step = 1;
-	
-        if(y0 >= y1) y_step = -1;
-	
-        for(int x = x0; x < x1; x++) {
-            if(is_steep){
-                plot_pixel(y, x, colour);	
-            } else {
-                plot_pixel(x, y, colour);
-            }
-            error = error + delta_y;
-            if(error >= 0) {
-                y = y + y_step;
-                error = error - delta_x;
-            }
-        }
-        x0 ++;
-        x1 ++;
-    }
-}
-
-void plot_pixel(int x, int y, short int line_color)
-{
-    *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
-}
-
-void clear_screen(){
-	for(int x = 0; x < 320; x++){
-		for(int y = 0; y < 240; y++){
-			plot_pixel(x, y, 0xFFFF);	
-		}
-	}
-	
-	draw_line(20, 220, 320, 220, 0x0);
-	draw_line(20, 0, 20, 220, 0x0);
-}
-
-void wait_for_vsync(){
-	volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
-	register int status;
-	
-	*pixel_ctrl_ptr = 1; //writes 1 into front buffer register (starts synchro process)
-	
-	status = *(pixel_ctrl_ptr + 3);
-	
-	while((status & 0x01) != 0){
-		status = *(pixel_ctrl_ptr + 3);
-	}
-}
-
-//int x_scale(int x){
-//    if(x > 320) y = 0;
-//	return (21 + x);
-//}
-
-int y_scale(float y){	
-    if(y > 240) y = 0;                           
- 	return (220 - (int)log2(y));
 }
