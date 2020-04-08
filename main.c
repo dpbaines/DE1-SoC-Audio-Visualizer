@@ -72,8 +72,8 @@ int main(void) {
             while ((fifospace & 0x000000FF) && (buffer_index < BUF_SIZE)) {
                 left_buffer_re[buffer_index] = (Re) *(audio_ptr + 2);
                 left_buffer_im[buffer_index] = 0;
-                right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
-                right_buffer_im[buffer_index] = 0;
+                //right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
+                //right_buffer_im[buffer_index] = 0;
                 ++buffer_index;
                 if (buffer_index == BUF_SIZE) {
                     // done recording
@@ -90,7 +90,7 @@ int main(void) {
         clear_screen();
     
         //sorting frequencies into 32 bins to plot
-		for(int i = 0; i < buffer_size; i++){
+		for(int i = 0; i < BUF_SIZE; i++){
             //frequency bin 1
             if(i<62){
                 x_plot = 0;
