@@ -47,24 +47,21 @@ int main(void) {
     short int line_color = 0xF81F;
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     //set front pixel buffer to start of FPGA On-chip memory
-    //*(pixel_ctrl_ptr) = 0xC8000000; 
-    *(pixel_ctrl_ptr + 1) = 0xC0000000;
+    *(pixel_ctrl_ptr + 1) = 0xC8000000; 
     //swapping the front/back buffers, to set the front buffer location
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1);
+    wait_for_vsync();
     //initializing a pointer to the pixel buffer, used by the  drawing functions
-    // pixel_buffer_start = *pixel_ctrl_ptr;
-	
-	wait_for_vsync();
+    pixel_buffer_start = *pixel_ctrl_ptr;
 
     clear_screen(); 
 
     // pixel_buffer_start points to the pixel buffer
     //set back pixel buffer to start of SDRAM memory 
-    
-    // pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
+    *(pixel_ctrl_ptr + 1) = 0xC0000000;
+    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
 
-    int y_plot = 0;
-    int x_plot = 0;
+    int y_plot = 0; 
+	int x_plot = 0;
 
     while (1) {
 
@@ -94,82 +91,37 @@ int main(void) {
 
          /*******************ANIMATION PART********************/
         clear_screen();
-    		//plot 0
-		double value_0 = sqrt(left_buffer_re[0]*left_buffer_re[0] + left_buffer_im[0]*left_buffer_im[0]);
-		int y_plot_0 = y_scale(value_0);
-		draw_line(0, y_plot_0, 0, 220, line_color);
+		        //sorting frequencies into 32 bins to plot
+
+		
+		//plot 0
+		//double value_0 = sqrt(left_buffer_re[0]*left_buffer_re[0] + left_buffer_im[0]*left_buffer_im[0]);
+		//int y_plot_0 = y_scale(value_0);
+		//draw_line(0, y_plot_0, 0, 240, line_color);
 		
 		//plot 1
-		double value_1 = sqrt(left_buffer_re[1]*left_buffer_re[1] + left_buffer_im[1]*left_buffer_im[1]);
-		int y_plot_1 = y_scale(value_1);
-		draw_line(10, y_plot_1, 10, 220, line_color);
+		//double value_1 = sqrt(left_buffer_re[1]*left_buffer_re[1] + left_buffer_im[1]*left_buffer_im[1]);
+		//int y_plot_1 = y_scale(value_1);
+		//draw_line(10, y_plot_1, 10, 240, line_color);
 		//plot 2
-		double value_2 = sqrt(left_buffer_re[2]*left_buffer_re[2] + left_buffer_im[2]*left_buffer_im[2]);
-		int y_plot_2 = y_scale(value_2);
-		draw_line(20, y_plot_1, 20, 220, line_color);
-        //sorting frequencies into 32 bins to plot
-// 		for(int i = 0; i < BUF_SIZE; i++){
+		//double value_2 = sqrt(left_buffer_re[2]*left_buffer_re[2] + left_buffer_im[2]*left_buffer_im[2]);
+		//int y_plot_2 = y_scale(value_2);
+		//draw_line(20, y_plot_1, 20, 240, line_color);
+		for(int i = 0; i < 320; i++){
 //             //frequency bin 1
-//             if(i<62){
-//                 x_plot = 0;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-//             //frequency bin 2
-//             else if(i >= 62 && i<124){
-//                 x_plot = 10;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-//             //frequency bin 3
-//             else if(i >= 124 && i<186){
-//                 x_plot = 20;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-//             //frequency bin 4
-//             else if(i >= 186 && i<248){
-//                 x_plot = 30;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-//             //frequency bin 5
-//             else if(i >= 248 && i<310){
-//                 x_plot = 40;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-//             //frequency bin 6
-//             if(i >= 310 && i<372){
-//                 x_plot = 50;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-//             //frequency bin 7
-//             if(i >= 372 && i<434){
-//                 x_plot = 60;
-//                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-//                 y_plot += y_scale(value);
-//                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
-//             } 
-            
-// 		}
-		
+                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+				 y_plot = y_scale(value);
+                 draw_line(i, y_plot, i, 240, line_color);
+        } 
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
         
         //Test code
-        for(int i = 0; i < BUF_SIZE; i++) {
-	    double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-	    printf("%lf ", value);
-        }
-        printf("\n");
+        // for(int i = 0; i < BUF_SIZE; i++) {
+	    // double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+	    // printf("%lf ", value);
+        // }
+        // printf("\n");
     }
 }
 
@@ -374,6 +326,7 @@ void clear_screen(){
 			plot_pixel(x, y, 0xFFFF);	
 		}
 	}
+	
 }
 
 void wait_for_vsync(){
@@ -395,8 +348,19 @@ void wait_for_vsync(){
 // 	return (x);
 // }
 
+//int y_scale(double y){	
+    //if(y > 240) y = 0;                           
+ 	//return ((int)(240 - ((240/10)*(y/100000))));
+//}
+
+//int y_scale(double y){	
+	//int y_value = (int)(240.0 - ((24.0)*(y/10000000000.0)));
+	//if (y_value < 0) y = 0; 
+	//return y_value;
+//}
+
 int y_scale(double y){	
-    //if(y > 240) y = 240.0;
-	if(y < 0.0) y = 0.0;
- 	return ((int)(240.0 - ((24.0)*(y/2000000000.0))));
+	int y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
+	if (y_value < 0.0) y = 0.0; 
+	return y_value;
 }
