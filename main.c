@@ -302,7 +302,6 @@ void fft(Re buf_re[], Im buf_im[], int n) {
 
 /*****************Helper Functions for Drawing*******************/
 void draw_line(int x0, int y0, int x1, int y1, short int colour) {
-	for(int i = 0; i < 5; i++) {
         int is_steep = abs(y1-y0) > abs(x1-x0);
 
         if(is_steep != 0) {
@@ -346,9 +345,6 @@ void draw_line(int x0, int y0, int x1, int y1, short int colour) {
                 error = error - delta_x;
             }
         }
-        x0 ++;
-        x1 ++;
-    }
 }
 
 void plot_pixel(int x, int y, short int line_color)
