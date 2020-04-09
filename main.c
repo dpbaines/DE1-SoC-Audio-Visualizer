@@ -89,8 +89,8 @@ int main(void) {
          /*******************ANIMATION PART********************/
         clear_screen();
     
-        //sorting frequencies into 32 bins to plot
-		for(int i = 0; i < BUFF_SIZE; i++){
+                //sorting frequencies into 32 bins to plot
+		for(int i = 0; i < BUF_SIZE; i++){
             //frequency bin 1
             if(i<62){
                 x_plot = 0;
@@ -98,37 +98,37 @@ int main(void) {
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 2
-            else if(62<=i<124){
+            else if(62<=i && i <124){
                 x_plot = 10;
                 y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 3
-            else if(124<=i<186){
+            else if(124<=i && i <186){
                 x_plot = 20;
                 y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 4
-            else if(186<=i<248){
+            else if(186<=i && i<248){
                 x_plot = 30;
                 y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 5
-            else if(248<=i<310){
+            else if(248<=i && i<310){
                 x_plot = 40;
                 y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 6
-            if(310<=i<372){
+            if(310<=i && i<372){
                 x_plot = 50;
                 y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 7
-            if(372<=i<434){
+            if(372<=i && i<434){
                 x_plot = 60;
                 y_plot += y_scale(left_buffer_re[i]);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
