@@ -94,43 +94,50 @@ int main(void) {
             //frequency bin 1
             if(i<62){
                 x_plot = 0;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 2
-            else if(62<=i<124){
+            else if(i >= 62 && i<124){
                 x_plot = 10;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 3
-            else if(124<=i<186){
+            else if(i >= 124 && i<186){
                 x_plot = 20;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 4
-            else if(186<=i<248){
+            else if(i >= 186 && i<248){
                 x_plot = 30;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 5
-            else if(248<=i<310){
+            else if(i >= 248 && i<310){
                 x_plot = 40;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 6
-            if(310<=i<372){
+            if(i >= 310 && i<372){
                 x_plot = 50;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             //frequency bin 7
-            if(372<=i<434){
+            if(i >= 372 && i<434){
                 x_plot = 60;
-                y_plot += y_scale(left_buffer_re[i]);
+                double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+                y_plot += y_scale(value);
                 draw_line(x_plot, y_plot, x_plot, 220, line_color);
             } 
             
@@ -140,11 +147,11 @@ int main(void) {
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
         
         //Test code
-        for(int i = 0; i < BUF_SIZE; i++) {
-	    double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-	    printf("%lf ", value);
-        }
-        printf("\n");
+        // for(int i = 0; i < BUF_SIZE; i++) {
+	    // double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
+	    // printf("%lf ", value);
+        // }
+        // printf("\n");
     }
 }
 
@@ -293,10 +300,10 @@ void fft(Re buf_re[], Im buf_im[], int n) {
 
 /*****************Helper Functions for Drawing*******************/
 void draw_line(int x0, int y0, int x1, int y1, short int colour) {
-	for(int i = 0; i < 5; i++)
-        bool is_steep = abs(y1-y0) > abs(x1-x0);
+	for(int i = 0; i < 5; i++) {
+        int is_steep = abs(y1-y0) > abs(x1-x0);
 
-        if(is_steep) {
+        if(is_steep != 0) {
             int temp = x0;
             x0 = y0;
             y0 = temp;
