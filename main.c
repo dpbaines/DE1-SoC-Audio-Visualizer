@@ -30,6 +30,8 @@ void plot_pixel(int x, int y, short int line_color);
 void wait_for_vsync();
 int x_scale(int x);
 int y_scale(double y);
+void hann_window(Re buffer[]);
+void blackman_window(Re buffer[]);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -39,6 +41,9 @@ int main(void) {
     volatile int * audio_ptr = (int *)AUDIO_BASE;
     /* used for audio record/playback */
     int fifospace;
+    
+    Re right_buffer_re[BUF_SIZE];
+    Im right_buffer_im[BUF_SIZE];
     Re left_buffer_re[BUF_SIZE];
     Im left_buffer_im[BUF_SIZE];
     
@@ -75,8 +80,8 @@ int main(void) {
             while ((fifospace & 0x000000FF) && (buffer_index < BUF_SIZE)) {
                 left_buffer_re[buffer_index] = (Re) *(audio_ptr + 2);
                 left_buffer_im[buffer_index] = 0;
-                //right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
-                //right_buffer_im[buffer_index] = 0;
+                right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
+                right_buffer_im[buffer_index] = 0;
                 ++buffer_index;
                 if (buffer_index == BUF_SIZE) {
                     // done recording
@@ -86,8 +91,10 @@ int main(void) {
             }
         }
 
+        blackman_window(right_buffer_re);
+
         // Use Left channel
-        fft(left_buffer_re, left_buffer_im, BUF_SIZE);
+        fft(right_buffer_re, right_buffer_im, BUF_SIZE);
 
          /*******************ANIMATION PART********************/
         clear_screen();
@@ -107,19 +114,23 @@ int main(void) {
 		//double value_2 = sqrt(left_buffer_re[2]*left_buffer_re[2] + left_buffer_im[2]*left_buffer_im[2]);
 		//int y_plot_2 = y_scale(value_2);
 		//draw_line(20, y_plot_1, 20, 240, line_color);
+        //int dx = (BUF_SIZE/2) / 320;
 		for(int i = 0; i < 320; i++){
-//             //frequency bin 1
-                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-				 y_plot = y_scale(value);
-                 draw_line(i, y_plot, i, 240, line_color);
+            //frequency bin 1
+            double value0 = sqrt(right_buffer_re[i]*right_buffer_re[i] + right_buffer_im[i]*right_buffer_im[i]);
+            // double value1 = sqrt(left_buffer_re[2*i + 1]*left_buffer_re[2*i + 1] + left_buffer_im[2*i + 1]*left_buffer_im[2*i + 1]);
+            // double average = (value0 + value1) / 2.0;
+
+            y_plot = y_scale(value0);
+            draw_line(i, y_plot, i, 240, line_color);
         } 
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
         
         //Test code
         // for(int i = 0; i < BUF_SIZE; i++) {
-	    // double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-	    // printf("%lf ", value);
+	    double value = sqrt(right_buffer_re[0]*right_buffer_re[0] + right_buffer_im[0]*right_buffer_im[0]);
+	    printf("%lf ", value);
         // }
         // printf("\n");
     }
@@ -216,7 +227,7 @@ double sqrt(double number) {
     i = 0x5fe6eb50c7b537a9 - (i >> 1);
     y = *(double *) &i;
     y = y * (1.5 - (x2 * y * y));   // 1st iteration
-    //      y  = y * ( 1.5 - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+    y  = y * ( 1.5 - ( x2 * y * y ) );   // 2nd iteration, this can be removed
     return 1/y;
 }
 
@@ -231,6 +242,26 @@ inline Re cexp_re(Re re_in) {
 inline Im cexp_im(Im im_in) {
     return sin_me(im_in);
 }
+
+void hann_window(Re buffer[]) {
+    for(int i = 0; i < BUF_SIZE; i++) {
+        double multi = 0.5 * (1 - cos_me(2*PI*i / (BUF_SIZE-1)));
+        buffer[i] = buffer[i] * multi;
+    }    
+}
+
+void blackman_window(Re buffer[]) {
+    double a0 = 0.35875;
+    double a1 = 0.48829;
+    double a2 = 0.14128;
+    double a3 = 0.01168;
+
+    for(int i = 0; i < BUF_SIZE; i++) {
+        double multi = a0 - a1 * cos_me(2*PI*i / (BUF_SIZE-1)) + a2 * cos_me(4*PI*i / (BUF_SIZE-1)) - a3 * cos_me(6*PI*i / (BUF_SIZE-1));
+        buffer[i] = buffer[i] * multi;
+    }    
+}
+
 
 /*
  * Original code copied from https://rosettacode.org/wiki/Fast_Fourier_transform#C
@@ -359,8 +390,33 @@ void wait_for_vsync(){
 	//return y_value;
 //}
 
+/*
+ *  Copyright David Baines 2020
+ */
+double shittylog(double value) {
+    double lut1[] = {0.0413926851582, 0.0791812460476, 0.113943352307, 0.146128035678, 0.176091259056, 0.204119982656, 0.230448921378, 0.255272505103, 0.278753600953};
+    double lut2[] = {-1, 0.0, 0.301029995664, 0.47712125472, 0.602059991328, 0.698970004336, 0.778151250384, 0.845098040014, 0.903089986992, 0.954242509439};
+
+    double answer = value;
+    double counter = 0;
+
+    while(answer >= 10) {
+        answer = answer/10;
+        counter += 1.0;
+    }
+
+    int trunc = answer;
+
+    //printf("%lf, %d, %lf\n", answer, trunc, counter);
+    counter = counter + lut2[trunc];
+
+    return counter;
+}
+
 int y_scale(double y){	
-	int y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
-	if (y_value < 0.0) y = 0.0; 
+    //double logged = shittylog(y);
+	int y_value = ((int)(240.0 - ((24.0)*(sqrt(y)/40000.0))));
+	if (y_value < 0.0) y_value = 0.0;
+    if(y_value > 240.0) y_value = 240.0;
 	return y_value;
 }
