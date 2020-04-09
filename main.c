@@ -361,8 +361,8 @@ void clear_screen(){
 		}
 	}
 	
-	draw_line(20, 220, 320, 220, 0x0);
-	draw_line(20, 0, 20, 220, 0x0);
+	//draw_line(20, 220, 320, 220, 0x0);
+	//draw_line(20, 0, 20, 220, 0x0);
 }
 
 void wait_for_vsync(){
