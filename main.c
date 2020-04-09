@@ -58,7 +58,7 @@ int main(void) {
     
     /* used for vga display */
     //line colour for graph
-    short int line_color = 0x736AFF;
+    short int line_color = 0xFFFF;
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     //set front pixel buffer to start of FPGA On-chip memory
     *(pixel_ctrl_ptr + 1) = 0xC8000000; 
