@@ -30,6 +30,9 @@ void plot_pixel(int x, int y, short int line_color);
 void wait_for_vsync();
 int x_scale(int x);
 int y_scale(double y);
+void hann_window(Re buffer[]);
+void blackman_window(Re buffer[]);
+void average_iter(Re buffer[], Re prev[], Re prev2[]);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -39,6 +42,17 @@ int main(void) {
     volatile int * audio_ptr = (int *)AUDIO_BASE;
     /* used for audio record/playback */
     int fifospace;
+	
+    // Re right_buffer_re[BUF_SIZE];
+    // Im right_buffer_im[BUF_SIZE];
+    Re left_buffer_prev[BUF_SIZE];
+    Re left_buffer_prev2[BUF_SIZE];
+
+    for(int t = 0; t < BUF_SIZE; t++) {
+        left_buffer_prev[t] = 0;
+        left_buffer_prev2[t] = 0;
+    }
+
     Re left_buffer_re[BUF_SIZE];
     Im left_buffer_im[BUF_SIZE];
     
@@ -86,6 +100,10 @@ int main(void) {
             }
         }
 
+	average_iter(left_buffer_re, left_buffer_prev, left_buffer_prev2);
+
+        blackman_window(left_buffer_re);
+	    
         // Use Left channel
         fft(left_buffer_re, left_buffer_im, BUF_SIZE);
 
@@ -222,7 +240,7 @@ double sqrt(double number) {
     i = 0x5fe6eb50c7b537a9 - (i >> 1);
     y = *(double *) &i;
     y = y * (1.5 - (x2 * y * y));   // 1st iteration
-    //      y  = y * ( 1.5 - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+    y  = y * ( 1.5 - ( x2 * y * y ) );   // 2nd iteration, this can be removed
     return 1/y;
 }
 
@@ -237,6 +255,36 @@ inline Re cexp_re(Re re_in) {
 inline Im cexp_im(Im im_in) {
     return sin_me(im_in);
 }
+
+void average_iter(Re buffer[], Re prev[], Re prev2[]) {
+    for(int i = 0; i < BUF_SIZE; i++) {
+        buffer[i] = (buffer[i] + prev[i] + prev2[i]) / 3;
+
+        prev2[i] = prev[i];
+        prev[i] = buffer[i];
+    }
+}
+
+void hann_window(Re buffer[]) {
+    for(int i = 0; i < BUF_SIZE; i++) {
+        double multi = 0.5 * (1 - cos_me(2*PI*i / (BUF_SIZE-1)));
+        buffer[i] = buffer[i] * multi;
+    }    
+}
+
+void blackman_window(Re buffer[]) {
+    double a0 = 0.35875;
+    double a1 = 0.48829;
+    double a2 = 0.14128;
+    double a3 = 0.01168;
+
+    for(int i = 0; i < BUF_SIZE; i++) {
+        double multi = a0 - a1 * cos_me(2*PI*i / (BUF_SIZE-1)) + a2 * cos_me(4*PI*i / (BUF_SIZE-1)) - a3 * cos_me(6*PI*i / (BUF_SIZE-1));
+        buffer[i] = buffer[i] * multi;
+    }    
+}
+
+
 
 /*
  * Original code copied from https://rosettacode.org/wiki/Fast_Fourier_transform#C
@@ -348,6 +396,53 @@ void wait_for_vsync(){
 	}
 }
 
+// int x_scale(int x){
+// 	if(x > 320) x = 320;
+
+// 	return (x);
+// }
+
+//int y_scale(double y){	
+    //if(y > 240) y = 0;                           
+ 	//return ((int)(240 - ((240/10)*(y/100000))));
+//}
+
+//int y_scale(double y){	
+	//int y_value = (int)(240.0 - ((24.0)*(y/10000000000.0)));
+	//if (y_value < 0) y = 0; 
+	//return y_value;
+//}
+
+/*
+ *  Copyright David Baines 2020
+ */
+double shittylog(double value) {
+    double lut1[] = {0.0413926851582, 0.0791812460476, 0.113943352307, 0.146128035678, 0.176091259056, 0.204119982656, 0.230448921378, 0.255272505103, 0.278753600953};
+    double lut2[] = {-1, 0.0, 0.301029995664, 0.47712125472, 0.602059991328, 0.698970004336, 0.778151250384, 0.845098040014, 0.903089986992, 0.954242509439};
+
+    double answer = value;
+    double counter = 0;
+
+    while(answer >= 10) {
+        answer = answer/10;
+        counter += 1.0;
+    }
+
+    int trunc = answer;
+
+    //printf("%lf, %d, %lf\n", answer, trunc, counter);
+    counter = counter + lut2[trunc];
+
+    return counter;
+}
+
+int y_scale(double y){	
+    //double logged = shittylog(y);
+	int y_value = ((int)(240.0 - ((24.0)*(sqrt(y)/40000.0))));
+	if (y_value < 0.0) y_value = 0.0;
+    if(y_value > 240.0) y_value = 240.0;
+	return y_value;
+
 //int y_scale(double y){	
 	//int y_value = 0;
 	//if(y < 90000000) y_value = 240;
@@ -356,12 +451,12 @@ void wait_for_vsync(){
 	//return (y_value);
 //}
 
-int y_scale(double y){	
-	int y_value = 0;
-	if(y < 2000000000) y_value = 240;
-	//else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
-	else y_value = (int)(240-(y/200000000.0));
-	if (y_value < 0.0) y_value = 0.0; 
-	return (y_value);
-}
+//int y_scale(double y){	
+	//int y_value = 0;
+	//if(y < 2000000000) y_value = 240;
+	////else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
+	//else y_value = (int)(240-(y/200000000.0));
+	//if (y_value < 0.0) y_value = 0.0; 
+	//return (y_value);
+//}
 
