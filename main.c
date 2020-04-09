@@ -91,36 +91,32 @@ int main(void) {
 
          /*******************ANIMATION PART********************/
         clear_screen();
-		        //sorting frequencies into 32 bins to plot
+	//array to store values
+	int y_values [256];
 
-		
-		//plot 0
-		//double value_0 = sqrt(left_buffer_re[0]*left_buffer_re[0] + left_buffer_im[0]*left_buffer_im[0]);
-		//int y_plot_0 = y_scale(value_0);
-		//draw_line(0, y_plot_0, 0, 240, line_color);
-		
-		//plot 1
-		//double value_1 = sqrt(left_buffer_re[1]*left_buffer_re[1] + left_buffer_im[1]*left_buffer_im[1]);
-		//int y_plot_1 = y_scale(value_1);
-		//draw_line(10, y_plot_1, 10, 240, line_color);
-		//plot 2
-		//double value_2 = sqrt(left_buffer_re[2]*left_buffer_re[2] + left_buffer_im[2]*left_buffer_im[2]);
-		//int y_plot_2 = y_scale(value_2);
-		//draw_line(20, y_plot_1, 20, 240, line_color);
 		for(int i = 0; i < 256; i++){
 
 			int index_1 = i*2;
 			int index_2 = i*2+1;
 			
 			//averaging numbers
-            double value_1 = sqrt(left_buffer_re[index_1]*left_buffer_re[index_1] + left_buffer_im[index_1]*left_buffer_im[index_1]);
+           		double value_1 = sqrt(left_buffer_re[index_1]*left_buffer_re[index_1] + left_buffer_im[index_1]*left_buffer_im[index_1]);
 			double value_2 = sqrt(left_buffer_re[index_2]*left_buffer_re[index_2] + left_buffer_im[index_2]*left_buffer_im[index_2]);
-			//if((value_1 != 0) || (value_2 != 0)){
-				double value = (value_1+value_2)/2;
-				y_plot = y_scale(value);
-            	draw_line(i+32, y_plot, i+32, 240, line_color);
-			//}
-        } 
+			double value = (value_1+value_2)/2;
+			
+			//plotting values
+			y_plot = y_scale(value);
+            		draw_line(i+32, y_plot, i+32, 240, line_color);	
+			
+			//store y_plot values
+			y_values[i] = y_plot;
+        	} 
+	    
+	//connecting lines
+	for(int i = 0; i < (256-1); i++){
+		draw_line(i+32, y_values[i], (i+1)+32, y_values[i+1], line_color);
+	}
+	    
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
         
