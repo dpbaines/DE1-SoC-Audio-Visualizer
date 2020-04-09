@@ -463,6 +463,7 @@ double shittylog(double value) {
 
 int y_scale(double y){	
 	int y_value = 0;
+	//added bounds to try and cut out noise (acts like band pass filter)
 	if(y < 100000000.0) y_value = 240;
 	else if(y > 12000000000.0) y_value = 240.0;
 	////else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
