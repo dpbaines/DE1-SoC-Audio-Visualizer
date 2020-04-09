@@ -107,11 +107,19 @@ int main(void) {
 		//double value_2 = sqrt(left_buffer_re[2]*left_buffer_re[2] + left_buffer_im[2]*left_buffer_im[2]);
 		//int y_plot_2 = y_scale(value_2);
 		//draw_line(20, y_plot_1, 20, 240, line_color);
-		for(int i = 0; i < 320; i++){
-//             //frequency bin 1
-                 double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-				 y_plot = y_scale(value);
-                 draw_line(i, y_plot, i, 240, line_color);
+		for(int i = 0; i < 256; i++){
+
+			int index_1 = i*2;
+			int index_2 = i*2+1;
+			
+			//averaging numbers
+            double value_1 = sqrt(left_buffer_re[index_1]*left_buffer_re[index_1] + left_buffer_im[index_1]*left_buffer_im[index_1]);
+			double value_2 = sqrt(left_buffer_re[index_2]*left_buffer_re[index_2] + left_buffer_im[index_2]*left_buffer_im[index_2]);
+			//if((value_1 != 0) || (value_2 != 0)){
+				double value = (value_1+value_2)/2;
+				y_plot = y_scale(value);
+            	draw_line(i+32, y_plot, i+32, 240, line_color);
+			//}
         } 
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
@@ -342,25 +350,8 @@ void wait_for_vsync(){
 	}
 }
 
-// int x_scale(int x){
-// 	if(x > 320) x = 320;
-	
-// 	return (x);
-// }
-
-//int y_scale(double y){	
-    //if(y > 240) y = 0;                           
- 	//return ((int)(240 - ((240/10)*(y/100000))));
-//}
-
-//int y_scale(double y){	
-	//int y_value = (int)(240.0 - ((24.0)*(y/10000000000.0)));
-	//if (y_value < 0) y = 0; 
-	//return y_value;
-//}
-
 int y_scale(double y){	
 	int y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
 	if (y_value < 0.0) y = 0.0; 
-	return y_value;
+	return (y_value);
 }
