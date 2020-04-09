@@ -90,7 +90,7 @@ int main(void) {
         clear_screen();
     
         //sorting frequencies into 32 bins to plot
-		for(int i = 0; i < buffer_size; i++){
+		for(int i = 0; i < BUFF_SIZE; i++){
             //frequency bin 1
             if(i<62){
                 x_plot = 0;
