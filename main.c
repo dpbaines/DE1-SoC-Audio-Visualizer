@@ -113,9 +113,9 @@ int main(void) {
         	} 
 	    
 	//connecting lines
-	for(int i = 0; i < (256-1); i++){
-		draw_line(i+32, y_values[i], (i+1)+32, y_values[i+1], line_color);
-	}
+	//for(int i = 0; i < (256-1); i++){
+	//	draw_line(i+32, y_values[i], (i+1)+32, y_values[i+1], line_color);
+	//}
 	    
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
