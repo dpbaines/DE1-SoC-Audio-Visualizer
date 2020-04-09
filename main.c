@@ -109,8 +109,8 @@ int main(void) {
 
          /*******************ANIMATION PART********************/
         clear_screen();
-	////array to store values
-	//int y_values [256];
+	//array to store values
+	int y_values [256];
 
 		for(int i = 0; i < 256; i++){
 
@@ -124,17 +124,17 @@ int main(void) {
 			
 			//plotting values
 			y_plot = y_scale(value);
-            draw_line(i+32, y_plot, i+32, 240, line_color);	
-			
-			////store y_plot values
-			//y_values[i] = y_plot;
+            draw_line(i+32, y_plot, i+32, 240, 0xFFFF);	
+			//plot_pixel(i+32, y_plot, 0xFFFF);	
+			//store y_plot values
+			y_values[i] = y_plot;
         } 
 	    
 	//connecting lines
 	//for(int i = 0; i < (256-1); i++){
-	//	//int index_1 = i;
-	//	//int index_2 = i
-	//	draw_line(i+32, y_values[i], (i+1)+32, y_values[i+1], line_color);
+		//int index_1 = i;
+		//int index_2 = i
+		//draw_line(i+32, y_values[i], (i+1)+32, y_values[i+1], line_color);
 	//}
 	    
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
@@ -443,22 +443,13 @@ double shittylog(double value) {
 //    if(y_value > 240.0) y_value = 240.0;
 //	return y_value;
 //}
+
 //int y_scale(double y){	
 	//int y_value = 0;
 	//if(y < 90000000) y_value = 240;
 	//else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
 	//if (y_value < 0.0) y_value = 0.0; 
 	//return (y_value);
-//}
-
-//int y_scale(double y){	
-//	int y_value = 0;
-//	if(y < 200000000.0) y_value = 240;
-//	////else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
-//	else y_value = (int)(240-(y/200000000.0));
-//	//else y_value = (int)(240.0 - ((sqrt(y))));///40000.0)));
-//	if (y_value < 0.0) y_value = 0.0; 
-//	return (y_value);
 //}
 
 int y_scale(double y){	
@@ -472,4 +463,3 @@ int y_scale(double y){
 	if (y_value < 0.0) y_value = 240.0; 
 	return (y_value);
 }
-
