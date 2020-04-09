@@ -1,4 +1,6 @@
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define LEDR_BASE             0xFF200000
 #define AUDIO_BASE            0xFF203040
