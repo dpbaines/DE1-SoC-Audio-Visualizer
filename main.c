@@ -43,8 +43,6 @@ int main(void) {
     /* used for audio record/playback */
     int fifospace;
 	
-    // Re right_buffer_re[BUF_SIZE];
-    // Im right_buffer_im[BUF_SIZE];
     Re left_buffer_prev[BUF_SIZE];
     Re left_buffer_prev2[BUF_SIZE];
 
@@ -89,8 +87,6 @@ int main(void) {
             while ((fifospace & 0x000000FF) && (buffer_index < BUF_SIZE)) {
                 left_buffer_re[buffer_index] = (Re) *(audio_ptr + 2);
                 left_buffer_im[buffer_index] = 0;
-                //right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
-                //right_buffer_im[buffer_index] = 0;
                 ++buffer_index;
                 if (buffer_index == BUF_SIZE) {
                     // done recording
@@ -130,22 +126,10 @@ int main(void) {
 			y_values[i] = y_plot;
         } 
 	    
-	//connecting lines
-	//for(int i = 0; i < (256-1); i++){
-		//int index_1 = i;
-		//int index_2 = i
-		//draw_line(i+32, y_values[i], (i+1)+32, y_values[i+1], line_color);
-	//}
 	    
         wait_for_vsync(); // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
         
-        //Test code
-        // for(int i = 0; i < BUF_SIZE; i++) {
-	    // double value = sqrt(left_buffer_re[i]*left_buffer_re[i] + left_buffer_im[i]*left_buffer_im[i]);
-	    // printf("%lf ", value);
-        // }
-        // printf("\n");
     }
 }
 
@@ -396,23 +380,6 @@ void wait_for_vsync(){
 	}
 }
 
-// int x_scale(int x){
-// 	if(x > 320) x = 320;
-
-// 	return (x);
-// }
-
-//int y_scale(double y){	
-    //if(y > 240) y = 0;                           
- 	//return ((int)(240 - ((240/10)*(y/100000))));
-//}
-
-//int y_scale(double y){	
-	//int y_value = (int)(240.0 - ((24.0)*(y/10000000000.0)));
-	//if (y_value < 0) y = 0; 
-	//return y_value;
-//}
-
 /*
  *  Copyright David Baines 2020
  */
@@ -436,21 +403,6 @@ double shittylog(double value) {
     return counter;
 }
 
-//int y_scale(double y){	
-//    //double logged = shittylog(y);
-//	int y_value = ((int)(240.0 - ((24.0)*(sqrt(y)/40000.0))));
-//	if (y_value < 0.0) y_value = 0.0;
-//    if(y_value > 240.0) y_value = 240.0;
-//	return y_value;
-//}
-
-//int y_scale(double y){	
-	//int y_value = 0;
-	//if(y < 90000000) y_value = 240;
-	//else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
-	//if (y_value < 0.0) y_value = 0.0; 
-	//return (y_value);
-//}
 
 int y_scale(double y){	
 	int y_value = 0;
