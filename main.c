@@ -358,9 +358,9 @@ void wait_for_vsync(){
 
 int y_scale(double y){	
 	int y_value = 0;
-	if(y < 1000000000) y_value = 240;
+	if(y < 2000000000) y_value = 240;
 	//else y_value = ((int)(240.0 - ((24.0)*(y/20000000000.0))));
-	else y_value = (int)(240-(y/100000000.0));
+	else y_value = (int)(240-(y/200000000.0));
 	if (y_value < 0.0) y_value = 0.0; 
 	return (y_value);
 }
