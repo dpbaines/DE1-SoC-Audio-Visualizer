@@ -29,7 +29,7 @@ void clear_screen();
 void plot_pixel(int x, int y, short int line_color);
 void wait_for_vsync();
 int x_scale(int x);
-int y_scale(float y);
+int y_scale(double y);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -394,7 +394,9 @@ void wait_for_vsync(){
 // 	return (x);
 // }
 
-int y_scale(float y){	
-    if(y > 240) y = 0;                           
- 	return ((int)(240 - ((240/10)*(y/10))));
+int y_scale(double y){	
+	int y_value = (int)(240.0 - ((24.0)*(y/1000000000.0)));
+	if (y_value > 240) y = 0; 
+	return y_value;
+}
 }
