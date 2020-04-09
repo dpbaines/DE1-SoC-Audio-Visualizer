@@ -32,6 +32,7 @@ int x_scale(int x);
 int y_scale(double y);
 void hann_window(Re buffer[]);
 void blackman_window(Re buffer[]);
+void average_iter(Re buffer[], Re prev[], Re prev2[]);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -42,8 +43,16 @@ int main(void) {
     /* used for audio record/playback */
     int fifospace;
     
-    Re right_buffer_re[BUF_SIZE];
-    Im right_buffer_im[BUF_SIZE];
+    // Re right_buffer_re[BUF_SIZE];
+    // Im right_buffer_im[BUF_SIZE];
+    Re left_buffer_prev[BUF_SIZE];
+    Re left_buffer_prev2[BUF_SIZE];
+
+    for(int t = 0; t < BUF_SIZE; t++) {
+        left_buffer_prev[t] = 0;
+        left_buffer_prev2[t] = 0;
+    }
+
     Re left_buffer_re[BUF_SIZE];
     Im left_buffer_im[BUF_SIZE];
     
@@ -80,8 +89,8 @@ int main(void) {
             while ((fifospace & 0x000000FF) && (buffer_index < BUF_SIZE)) {
                 left_buffer_re[buffer_index] = (Re) *(audio_ptr + 2);
                 left_buffer_im[buffer_index] = 0;
-                right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
-                right_buffer_im[buffer_index] = 0;
+                // right_buffer_re[buffer_index] = (Re) *(audio_ptr + 3);
+                // right_buffer_im[buffer_index] = 0;
                 ++buffer_index;
                 if (buffer_index == BUF_SIZE) {
                     // done recording
@@ -91,15 +100,17 @@ int main(void) {
             }
         }
 
-        blackman_window(right_buffer_re);
+        average_iter(left_buffer_re, left_buffer_prev, left_buffer_prev2);
+
+        blackman_window(left_buffer_re);
 
         // Use Left channel
-        fft(right_buffer_re, right_buffer_im, BUF_SIZE);
+        fft(left_buffer_re, left_buffer_im, BUF_SIZE);
 
          /*******************ANIMATION PART********************/
         clear_screen();
-	//array to store values
-	int y_values [256];
+	    //array to store values
+	    int y_values [256];
 
 		for(int i = 0; i < 256; i++){
 
@@ -107,17 +118,17 @@ int main(void) {
 			int index_2 = i*2+1;
 			
 			//averaging numbers
-           		double value_1 = sqrt(left_buffer_re[index_1]*left_buffer_re[index_1] + left_buffer_im[index_1]*left_buffer_im[index_1]);
+           	double value_1 = sqrt(left_buffer_re[index_1]*left_buffer_re[index_1] + left_buffer_im[index_1]*left_buffer_im[index_1]);
 			double value_2 = sqrt(left_buffer_re[index_2]*left_buffer_re[index_2] + left_buffer_im[index_2]*left_buffer_im[index_2]);
 			double value = (value_1+value_2)/2;
 			
 			//plotting values
 			y_plot = y_scale(value);
-            		draw_line(i+32, y_plot, i+32, 240, line_color);	
+            // draw_line(i+32, y_plot, i+32, 240, line_color);	
 			
 			//store y_plot values
 			y_values[i] = y_plot;
-        	} 
+        } 
 	    
         //connecting lines
         for(int i = 0; i < (256-1); i++){
@@ -129,8 +140,8 @@ int main(void) {
         
         //Test code
         // for(int i = 0; i < BUF_SIZE; i++) {
-	    double value = sqrt(right_buffer_re[0]*right_buffer_re[0] + right_buffer_im[0]*right_buffer_im[0]);
-	    printf("%lf ", value);
+	    //double value = sqrt(right_buffer_re[0]*right_buffer_re[0] + right_buffer_im[0]*right_buffer_im[0]);
+	    //printf("%lf ", value);
         // }
         // printf("\n");
     }
@@ -241,6 +252,15 @@ inline Re cexp_re(Re re_in) {
 
 inline Im cexp_im(Im im_in) {
     return sin_me(im_in);
+}
+
+void average_iter(Re buffer[], Re prev[], Re prev2[]) {
+    for(int i = 0; i < BUF_SIZE; i++) {
+        buffer[i] = (buffer[i] + prev[i] + prev2[i]) / 3;
+
+        prev2[i] = prev[i];
+        prev[i] = buffer[i];
+    }
 }
 
 void hann_window(Re buffer[]) {
