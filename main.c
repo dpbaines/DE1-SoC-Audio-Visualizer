@@ -1,4 +1,6 @@
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define LEDR_BASE             0xFF200000
 #define AUDIO_BASE            0xFF203040
@@ -293,7 +295,7 @@ void fft(Re buf_re[], Im buf_im[], int n) {
 
 /*****************Helper Functions for Drawing*******************/
 void draw_line(int x0, int y0, int x1, int y1, short int colour) {
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 5; i++){
         bool is_steep = abs(y1-y0) > abs(x1-x0);
 
         if(is_steep) {
