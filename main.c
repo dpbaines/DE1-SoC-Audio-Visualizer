@@ -27,7 +27,7 @@ void clear_screen();
 void plot_pixel(int x, int y, short int line_color);
 void wait_for_vsync();
 int x_scale(int x);
-int y_scale(float y);
+int y_scale(double y);
 
 int main(void) {
     /* Declare volatile pointers to I/O registers (volatile means that IO load
@@ -45,20 +45,24 @@ int main(void) {
     short int line_color = 0xF81F;
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
     //set front pixel buffer to start of FPGA On-chip memory
-    *(pixel_ctrl_ptr + 1) = 0xC8000000; 
+    //*(pixel_ctrl_ptr) = 0xC8000000; 
+    *(pixel_ctrl_ptr + 1) = 0xC0000000;
     //swapping the front/back buffers, to set the front buffer location
-    wait_for_vsync();
+    pixel_buffer_start = *(pixel_ctrl_ptr + 1);
     //initializing a pointer to the pixel buffer, used by the  drawing functions
-    pixel_buffer_start = *pixel_ctrl_ptr;
+    // pixel_buffer_start = *pixel_ctrl_ptr;
+	
+	wait_for_vsync();
 
     clear_screen(); 
 
     // pixel_buffer_start points to the pixel buffer
     //set back pixel buffer to start of SDRAM memory 
-    *(pixel_ctrl_ptr + 1) = 0xC0000000;
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
+    
+    // pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
 
-    int y_plot, x_plot;
+    int y_plot = 0;
+    int x_plot = 0;
 
     while (1) {
 
@@ -361,8 +365,8 @@ void clear_screen(){
 		}
 	}
 	
-	draw_line(20, 220, 320, 220, 0x0);
-	draw_line(20, 0, 20, 220, 0x0);
+	// draw_line(20, 220, 320, 220, 0x0);
+	// draw_line(20, 0, 20, 220, 0x0);
 }
 
 void wait_for_vsync(){
@@ -384,7 +388,8 @@ void wait_for_vsync(){
 // 	return (x);
 // }
 
-int y_scale(float y){	
-    if(y > 240) y = 0;                           
- 	return ((int)(240 - ((240/10)*(y/10))));
+int y_scale(double y){	
+    //if(y > 240) y = 240.0;
+	if(y < 0) y = 0.0;
+ 	return ((int)(240.0 - ((24.0)*(y/1000000000.0))));
 }
